@@ -1,17 +1,26 @@
 import fs from "fs";
 import path from "path";
 
+const DATA = path.join(process.cwd(), "data/inversiones.json");
+
 export default function handler(req, res) {
-  const file = path.join(process.cwd(), "data/historico.json");
-  if (!fs.existsSync(file)) return res.status(200).json([]);
+  if (!fs.existsSync(DATA)) {
+    return res.status(200).json([]);
+  }
 
-  let data = JSON.parse(fs.readFileSync(file));
+  let data = JSON.parse(fs.readFileSync(DATA));
 
-  data = data.filter(d =>
-    d.anio_inicio > 2025 ||
-    (d.anio_inicio === 2025 && d.semestre >= 2)
-  );
+  const { empresa, tipo } = req.query;
 
-  data.sort((a, b) => b.anio_inicio - a.anio_inicio);
+  if (empresa) {
+    data = data.filter(d =>
+      d.empresa.toLowerCase().includes(empresa.toLowerCase())
+    );
+  }
+
+  if (tipo) {
+    data = data.filter(d => d.tipo_inversion === tipo);
+  }
+
   res.status(200).json(data);
 }
