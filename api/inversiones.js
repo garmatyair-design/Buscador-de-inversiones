@@ -1,16 +1,9 @@
-import fs from "fs";
-import path from "path";
+let CACHE = [];
 
-const DATA = path.join(process.cwd(), "data/inversiones.json");
-
-export default function handler(req, res) {
-  if (!fs.existsSync(DATA)) {
-    return res.status(200).json([]);
-  }
-
-  let data = JSON.parse(fs.readFileSync(DATA));
-
+export default async function handler(req, res) {
   const { empresa, tipo } = req.query;
+
+  let data = CACHE;
 
   if (empresa) {
     data = data.filter(d =>
@@ -23,4 +16,11 @@ export default function handler(req, res) {
   }
 
   res.status(200).json(data);
+}
+
+export function agregar(datos) {
+  const urls = new Set(CACHE.map(d => d.url));
+  datos.forEach(d => {
+    if (!urls.has(d.url)) CACHE.push(d);
+  });
 }
