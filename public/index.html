@@ -1,42 +1,39 @@
-<input id="buscarEmpresa" placeholder="Buscar empresa" />
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Inversiones México</title>
 
-<select id="tipoInversion">
-  <option value="">Todos</option>
-  <option value="PLANTA NUEVA">Planta nueva</option>
-  <option value="EXPANSIÓN">Expansión</option>
-  <option value="INVERSIÓN">Inversión</option>
-</select>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
 
-<button id="buscarTop">Buscar inversiones</button>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    #mapa { height: 400px; margin: 20px 0; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #ccc; padding: 6px; }
+  </style>
+</head>
+<body>
 
-<table>
-  <thead>
-    <tr>
-      <th>Empresa</th>
-      <th>Tipo</th>
-      <th>Sector</th>
-      <th>Año</th>
-      <th>Fuente</th>
-      <th>Link</th>
-    </tr>
-  </thead>
-  <tbody id="tabla"></tbody>
-</table>
+  <button id="buscarTop">Buscar inversiones</button>
 
-<link
-  rel="stylesheet"
-  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-/>
+  <div id="mapa"></div>
 
-<div id="mapa"></div>
+  <table>
+    <thead>
+      <tr>
+        <th>Empresa</th>
+        <th>Tipo</th>
+        <th>Año</th>
+      </tr>
+    </thead>
+    <tbody id="tabla"></tbody>
+  </table>
 
-<style>
-#mapa {
-  height: 400px;
-  margin: 20px 0;
-}
-</style>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="/app.js"></script>
-
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
