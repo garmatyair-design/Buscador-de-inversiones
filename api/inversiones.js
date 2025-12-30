@@ -1,13 +1,6 @@
 import fs from "fs";
 import path from "path";
 
-function normalizarMonto(monto) {
-  if (!monto) return 0;
-  let valor = parseFloat(monto.replace(/[^0-9.]/g, ""));
-  if (monto.includes("MDD")) valor *= 1000;
-  return valor;
-}
-
 export default function handler(req, res) {
   const filePath = path.join(process.cwd(), "inversiones.json");
 
@@ -17,22 +10,27 @@ export default function handler(req, res) {
 
   let data = JSON.parse(fs.readFileSync(filePath, "utf8"));
 
-  // FILTRO 2026–2030
-  data = data.filter(
-    inv => inv.anio_inicio >= 2026 && inv.anio_inicio <= 2030
-  );
+  // FILTRO DESDE 2° SEMESTRE 2025 EN ADELANTE
+  data = data.filter(inv => {
+    if (inv.anio_inicio > 2025) return true;
+    if (inv.anio_inicio === 2025 && inv.semestre >= 2) return true;
+    return false;
+  });
 
-  data.forEach(inv => {
-    inv._montoNumerico = normalizarMonto(inv.monto);
+  // ORDENAR POR FECHA MÁS RECIENTE
+  data.sort((a, b) => {
+    if (b.anio_inicio !== a.anio_inicio) {
+      return b.anio_inicio - a.anio_inicio;
+    }
+    return (b.semestre || 1) - (a.semestre || 1);
   });
 
   const modo = req.query.modo || "top";
 
   if (modo === "historico") {
-    data.sort((a, b) => b.anio_inicio - a.anio_inicio);
     return res.status(200).json(data);
   }
 
-  data.sort((a, b) => b._montoNumerico - a._montoNumerico);
+  // TOP 10 POR RECIENCIA
   res.status(200).json(data.slice(0, 10));
 }
