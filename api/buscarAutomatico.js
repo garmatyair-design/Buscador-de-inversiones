@@ -1,74 +1,46 @@
-import fs from "fs";
-import path from "path";
-
-const HISTORICO = path.join(process.cwd(), "data/historico.json");
-
 export default async function handler(req, res) {
+  if (!process.env.BING_API_KEY) {
+    return res.status(200).json({
+      ok: false,
+      mensaje: "BING_API_KEY no configurada, se omite Bing"
+    });
+  }
+
   const query = `
-    nueva planta OR expansión OR inversión OR abre planta
-    México
+    inversiones México planta nueva expansión inversión industrial
+    site:mx 2025 2026 2027 2028 2029 2030
   `;
 
-  const response = await fetch(
-    `https://api.bing.microsoft.com/v7.0/news/search?q=${encodeURIComponent(query)}&freshness=300&count=20`,
-    {
+  const url = `https://api.bing.microsoft.com/v7.0/search?q=${encodeURIComponent(
+    query
+  )}&count=20`;
+
+  try {
+    const r = await fetch(url, {
       headers: {
         "Ocp-Apim-Subscription-Key": process.env.BING_API_KEY
       }
+    });
+
+    const data = await r.json();
+
+    if (!data.webPages) {
+      return res.status(200).json({ ok: true, resultados: 0 });
     }
-  );
 
-  const data = await response.json();
-  const resultados = data.value.map(n => normalizar(n));
-  guardar(resultados);
+    const noticias = data.webPages.value.map(n => ({
+      titulo: n.name,
+      url: n.url,
+      fuente_nombre: n.displayUrl,
+      fuente_tipo: "Bing Search",
+      fecha: new Date().toISOString()
+    }));
 
-  res.status(200).json({ ok: true, encontrados: resultados.length });
-}
-
-function normalizar(n) {
-  const fecha = new Date(n.datePublished);
-  return {
-    titulo: n.name,
-    empresa: n.name.split(" ")[0],
-    sector: detectarSector(n.name),
-    tipo: detectarTipo(n.name),
-    monto: "No divulgado",
-    anio_inicio: fecha.getFullYear(),
-    semestre: fecha.getMonth() >= 6 ? 2 : 1,
-    fuente_nombre: n.provider?.[0]?.name || "Medio digital",
-    fuente_tipo: "Noticia indexada",
-    lat: null,
-    lng: null,
-    url: n.url
-  };
-}
-
-function guardar(nuevos) {
-  let actual = fs.existsSync(HISTORICO)
-    ? JSON.parse(fs.readFileSync(HISTORICO))
-    : [];
-
-  const urls = new Set(actual.map(a => a.url));
-  nuevos.forEach(n => {
-    if (!urls.has(n.url)) actual.push(n);
-  });
-
-  fs.writeFileSync(HISTORICO, JSON.stringify(actual, null, 2));
-}
-
-function detectarTipo(t) {
-  t = t.toLowerCase();
-  if (t.includes("planta")) return "PLANTA NUEVA";
-  if (t.includes("expans")) return "EXPANSIÓN";
-  if (t.includes("almac") || t.includes("cedis")) return "ALMACÉN";
-  return "OTRO";
-}
-
-function detectarSector(t) {
-  t = t.toLowerCase();
-  if (t.includes("automotr")) return "Automotriz";
-  if (t.includes("energ")) return "Energía";
-  if (t.includes("logíst")) return "Logística";
-  if (t.includes("data")) return "Tecnología";
-  return "Multisector";
+    res.status(200).json({ ok: true, noticias });
+  } catch (e) {
+    res.status(200).json({
+      ok: false,
+      error: "Error Bing controlado"
+    });
+  }
 }
