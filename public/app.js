@@ -1,13 +1,24 @@
-let inversiones = [];
+// 1. Inicializar mapa (OBLIGATORIO)
+const map = L.map("mapa").setView([23.6345, -102.5528], 5);
+
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  attribution: "© OpenStreetMap"
+}).addTo(map);
+
 let markers = [];
 
-async function buscarInversiones() {
-  const res = await fetch("/api/fuentesMasivas");
-  inversiones = await res.json();
-  renderTabla();
-  renderMapa();
-}
+// 2. Datos de prueba (para validar que TODO funciona)
+let inversiones = [
+  {
+    empresa: "Empresa Ejemplo",
+    tipo_inversion: "PLANTA NUEVA",
+    anio_inicio: 2026,
+    lat: 25.6866,
+    lng: -100.3161
+  }
+];
 
+// 3. Render tabla
 function renderTabla() {
   const tbody = document.getElementById("tabla");
   tbody.innerHTML = "";
@@ -17,23 +28,30 @@ function renderTabla() {
       <tr>
         <td>${i.empresa}</td>
         <td>${i.tipo_inversion}</td>
-        <td>${i.sector}</td>
         <td>${i.anio_inicio}</td>
-        <td><a href="${i.url}" target="_blank">Fuente</a></td>
       </tr>`;
   });
 }
 
+// 4. Render mapa
 function renderMapa() {
   markers.forEach(m => map.removeLayer(m));
   markers = [];
 
   inversiones.forEach(i => {
-    const marker = L.marker([i.lat, i.lng])
+    const m = L.marker([i.lat, i.lng])
       .addTo(map)
       .bindPopup(`<b>${i.empresa}</b><br>${i.tipo_inversion}`);
-    markers.push(marker);
+    markers.push(m);
   });
 }
 
-document.getElementById("buscarTop").addEventListener("click", buscarInversiones);
+// 5. Botón
+document.getElementById("buscarTop").addEventListener("click", () => {
+  renderTabla();
+  renderMapa();
+});
+
+// Render inicial
+renderTabla();
+renderMapa();
