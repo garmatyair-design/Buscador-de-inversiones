@@ -1,12 +1,30 @@
 const lista = document.getElementById("resultados");
+const filtroTipo = document.getElementById("filtroTipo");
+
+let mapa = L.map("mapa").setView([23.6345, -102.5528], 5);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(mapa);
+
+let marcadores = [];
+
+function limpiarMapa() {
+  marcadores.forEach(m => mapa.removeLayer(m));
+  marcadores = [];
+}
 
 async function cargarDatos(url) {
   const res = await fetch(url);
-  const data = await res.json();
+  let data = await res.json();
+
+  const tipoSeleccionado = filtroTipo.value;
+  if (tipoSeleccionado !== "TODOS") {
+    data = data.filter(inv => inv.tipo === tipoSeleccionado);
+  }
+
   lista.innerHTML = "";
+  limpiarMapa();
 
   if (data.length === 0) {
-    lista.innerHTML = "<li>No hay registros</li>";
+    lista.innerHTML = "<li>No hay inversiones que cumplan el criterio</li>";
     return;
   }
 
@@ -17,17 +35,25 @@ async function cargarDatos(url) {
       Empresa: ${inv.empresa}<br>
       Tipo: ${inv.tipo}<br>
       Monto: ${inv.monto}<br>
-      Fecha: ${inv.fecha}<br>
+      Año inicio: ${inv.anio_inicio}<br>
+      Fuente: ${inv.fuente_nombre} (${inv.fuente_tipo})<br>
       <a href="${inv.url}" target="_blank">Ver fuente</a>
     `;
     lista.appendChild(li);
+
+    if (inv.lat && inv.lng) {
+      const marker = L.marker([inv.lat, inv.lng])
+        .addTo(mapa)
+        .bindPopup(`<strong>${inv.empresa}</strong><br>${inv.tipo}`);
+      marcadores.push(marker);
+    }
   });
 }
 
-document.getElementById("buscarTop").addEventListener("click", () => {
+document.getElementById("buscarTop").onclick = () => {
   cargarDatos("/api/inversiones?modo=top");
-});
+};
 
-document.getElementById("buscarHistorico").addEventListener("click", () => {
+document.getElementById("buscarHistorico").onclick = () => {
   cargarDatos("/api/inversiones?modo=historico");
-});
+};
