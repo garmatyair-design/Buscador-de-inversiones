@@ -1,59 +1,94 @@
-import Parser from "rss-parser";
 import fs from "fs";
 import path from "path";
 
-const parser = new Parser();
-const HISTORICO = path.join(process.cwd(), "data/historico.json");
+const DATA = path.join(process.cwd(), "data/inversiones.json");
 
 const FEEDS = [
-  "https://mexicoindustry.com/rss",
-  "https://clusterindustrial.com.mx/rss"
+  {
+    nombre: "México Industry",
+    url: "https://mexicoindustry.com/feed/",
+    sector: "Industrial"
+  },
+  {
+    nombre: "Cluster Industrial",
+    url: "https://clusterindustrial.com.mx/feed/",
+    sector: "Industrial"
+  }
 ];
 
 export default async function handler(req, res) {
-  let resultados = [];
+  let nuevas = [];
 
   for (const feed of FEEDS) {
-    const rss = await parser.parseURL(feed);
-    rss.items.forEach(item => {
-      const fecha = new Date(item.pubDate);
-      resultados.push({
-        titulo: item.title,
-        empresa: item.title.split(" ")[0],
-        sector: "Industrial",
-        tipo: detectarTipo(item.title),
-        monto: "No divulgado",
-        anio_inicio: fecha.getFullYear(),
-        semestre: fecha.getMonth() >= 6 ? 2 : 1,
-        fuente_nombre: rss.title,
-        fuente_tipo: "RSS oficial",
-        lat: null,
-        lng: null,
-        url: item.link
-      });
-    });
+    try {
+      const xml = await fetch(feed.url).then(r => r.text());
+      const items = [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)];
+
+      for (const i of items) {
+        const titulo = tag(i[1], "title");
+        const link = tag(i[1], "link");
+        const pubDate = tag(i[1], "pubDate");
+
+        if (!titulo || !link || !pubDate) continue;
+
+        const fecha = new Date(pubDate);
+        const anio = fecha.getFullYear();
+        const semestre = fecha.getMonth() >= 6 ? 2 : 1;
+
+        if (anio < 2025) continue;
+
+        nuevas.push({
+          titulo,
+          empresa: detectarEmpresa(titulo),
+          sector: feed.sector,
+          tipo_inversion: detectarTipo(titulo),
+          monto: "No divulgado",
+          anio_inicio: anio,
+          semestre,
+          fuente_nombre: feed.nombre,
+          fuente_tipo: "RSS oficial",
+          lat: null,
+          lng: null,
+          url: link
+        });
+      }
+    } catch (e) {
+      // No rompe el sistema
+    }
   }
 
-  guardar(resultados);
-  res.status(200).json({ ok: true, rss: resultados.length });
+  guardar(nuevas);
+  res.status(200).json({ ok: true, agregadas: nuevas.length });
+}
+
+function tag(xml, t) {
+  const m = xml.match(new RegExp(`<${t}>([\\s\\S]*?)<\\/${t}>`));
+  return m ? m[1].replace(/<!\\[CDATA\\[|\\]\\]>/g, "").trim() : null;
 }
 
 function detectarTipo(t) {
   t = t.toLowerCase();
   if (t.includes("planta")) return "PLANTA NUEVA";
-  if (t.includes("expans")) return "EXPANSIÓN";
+  if (t.includes("expansi")) return "EXPANSIÓN";
+  if (t.includes("invers")) return "INVERSIÓN";
   return "OTRO";
 }
 
-function guardar(nuevos) {
-  let actual = fs.existsSync(HISTORICO)
-    ? JSON.parse(fs.readFileSync(HISTORICO))
+function detectarEmpresa(t) {
+  return t.split(" ")[0];
+}
+
+function guardar(nuevas) {
+  let actual = fs.existsSync(DATA)
+    ? JSON.parse(fs.readFileSync(DATA))
     : [];
 
   const urls = new Set(actual.map(a => a.url));
-  nuevos.forEach(n => {
+
+  nuevas.forEach(n => {
     if (!urls.has(n.url)) actual.push(n);
   });
 
-  fs.writeFileSync(HISTORICO, JSON.stringify(actual, null, 2));
+  fs.mkdirSync(path.dirname(DATA), { recursive: true });
+  fs.writeFileSync(DATA, JSON.stringify(actual, null, 2));
 }
