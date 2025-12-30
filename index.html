@@ -2,27 +2,27 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Radar de Inversiones</title>
+  <title>Radar de Inversiones México</title>
+
   <link rel="stylesheet" href="styles.css">
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 </head>
 <body>
 
-<h1>Radar de Inversiones 2026–2030</h1>
+<h1>Radar de Inversiones en México</h1>
 
 <div class="controles">
-  <button id="buscarTop">Top 10 inversiones</button>
-  <button id="buscarHistorico">Histórico completo</button>
+  <button id="buscarTop">Buscar inversiones</button>
+  <button id="buscarHistorico">Ver histórico</button>
+
+  <input type="text" id="buscadorEmpresa" placeholder="Buscar empresa...">
 
   <select id="filtroTipo">
     <option value="TODOS">Todos los tipos</option>
     <option value="PLANTA NUEVA">Planta nueva</option>
     <option value="EXPANSIÓN">Expansión</option>
     <option value="ALMACÉN">Almacén / CEDIS</option>
-    <option value="AUMENTO PRODUCCIÓN">Aumento producción</option>
+    <option value="OTRO">Otro</option>
   </select>
 </div>
 
@@ -32,5 +32,6 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="app.js"></script>
+
 </body>
 </html>
