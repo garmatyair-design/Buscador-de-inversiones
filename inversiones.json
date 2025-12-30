@@ -1,18 +1,26 @@
 [
   {
-    "titulo": "Nueva planta automotriz en Nuevo León",
-    "empresa": "AutoGlobal",
+    "titulo": "Nueva planta automotriz en Nuevo León para 2027",
+    "empresa": "AutoFuture",
     "tipo": "PLANTA NUEVA",
-    "monto": "800 MDD",
-    "fecha": "2025-01-20",
-    "url": "https://ejemplo.com/planta-nl"
+    "monto": "1,200 MDD",
+    "anio_inicio": 2027,
+    "fuente_nombre": "Cluster Industrial",
+    "fuente_tipo": "Medio industrial",
+    "lat": 25.6866,
+    "lng": -100.3161,
+    "url": "https://clusterindustrial.com.mx/ejemplo"
   },
   {
-    "titulo": "Expansión de centro logístico en Querétaro",
+    "titulo": "Expansión de centro logístico en Querétaro 2028",
     "empresa": "Logística MX",
     "tipo": "EXPANSIÓN",
-    "monto": "150 MDP",
-    "fecha": "2025-01-18",
-    "url": "https://ejemplo.com/cedis-qro"
+    "monto": "300 MDP",
+    "anio_inicio": 2028,
+    "fuente_nombre": "LinkedIn",
+    "fuente_tipo": "Post público indexado",
+    "lat": 20.5888,
+    "lng": -100.3899,
+    "url": "https://linkedin.com/posts/ejemplo"
   }
 ]
