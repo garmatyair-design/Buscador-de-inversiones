@@ -1,7 +1,7 @@
 body {
   font-family: Arial, sans-serif;
   background: #f4f6f8;
-  padding: 30px;
+  padding: 25px;
 }
 
 h1 {
@@ -12,14 +12,14 @@ h1 {
   margin-bottom: 15px;
 }
 
-button, select {
-  padding: 10px 14px;
+button, select, input {
+  padding: 10px;
   font-size: 14px;
-  margin-right: 8px;
+  margin-right: 6px;
 }
 
 #mapa {
-  height: 400px;
+  height: 420px;
   margin-bottom: 20px;
   border-radius: 6px;
 }
@@ -28,6 +28,6 @@ li {
   background: #ffffff;
   margin-bottom: 12px;
   padding: 12px;
-  border-left: 4px solid #007bff;
   list-style: none;
+  border-left: 4px solid #0066cc;
 }
