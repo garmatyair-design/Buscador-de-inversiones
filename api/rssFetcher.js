@@ -1,18 +1,13 @@
-import fs from "fs";
-import path from "path";
-
-const DATA = path.join(process.cwd(), "data/inversiones.json");
+import { agregar } from "./inversiones";
 
 const FEEDS = [
   {
     nombre: "México Industry",
-    url: "https://mexicoindustry.com/feed/",
-    sector: "Industrial"
+    url: "https://mexicoindustry.com/feed/"
   },
   {
     nombre: "Cluster Industrial",
-    url: "https://clusterindustrial.com.mx/feed/",
-    sector: "Industrial"
+    url: "https://clusterindustrial.com.mx/feed/"
   }
 ];
 
@@ -32,32 +27,25 @@ export default async function handler(req, res) {
         if (!titulo || !link || !pubDate) continue;
 
         const fecha = new Date(pubDate);
-        const anio = fecha.getFullYear();
-        const semestre = fecha.getMonth() >= 6 ? 2 : 1;
-
-        if (anio < 2025) continue;
+        if (fecha.getFullYear() < 2025) continue;
 
         nuevas.push({
           titulo,
-          empresa: detectarEmpresa(titulo),
-          sector: feed.sector,
+          empresa: titulo.split(" ")[0],
+          sector: "Industrial",
           tipo_inversion: detectarTipo(titulo),
-          monto: "No divulgado",
-          anio_inicio: anio,
-          semestre,
+          anio_inicio: fecha.getFullYear(),
           fuente_nombre: feed.nombre,
-          fuente_tipo: "RSS oficial",
-          lat: null,
-          lng: null,
+          fuente_tipo: "RSS",
+          lat: 23.6345,
+          lng: -102.5528,
           url: link
         });
       }
-    } catch (e) {
-      // No rompe el sistema
-    }
+    } catch {}
   }
 
-  guardar(nuevas);
+  agregar(nuevas);
   res.status(200).json({ ok: true, agregadas: nuevas.length });
 }
 
@@ -70,25 +58,5 @@ function detectarTipo(t) {
   t = t.toLowerCase();
   if (t.includes("planta")) return "PLANTA NUEVA";
   if (t.includes("expansi")) return "EXPANSIÓN";
-  if (t.includes("invers")) return "INVERSIÓN";
-  return "OTRO";
-}
-
-function detectarEmpresa(t) {
-  return t.split(" ")[0];
-}
-
-function guardar(nuevas) {
-  let actual = fs.existsSync(DATA)
-    ? JSON.parse(fs.readFileSync(DATA))
-    : [];
-
-  const urls = new Set(actual.map(a => a.url));
-
-  nuevas.forEach(n => {
-    if (!urls.has(n.url)) actual.push(n);
-  });
-
-  fs.mkdirSync(path.dirname(DATA), { recursive: true });
-  fs.writeFileSync(DATA, JSON.stringify(actual, null, 2));
+  return "INVERSIÓN";
 }
