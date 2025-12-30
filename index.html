@@ -1,37 +1,24 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Radar de Inversiones México</title>
+<input id="buscarEmpresa" placeholder="Buscar empresa" />
 
-  <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-</head>
-<body>
+<select id="tipoInversion">
+  <option value="">Todos</option>
+  <option value="PLANTA NUEVA">Planta nueva</option>
+  <option value="EXPANSIÓN">Expansión</option>
+  <option value="INVERSIÓN">Inversión</option>
+</select>
 
-<h1>Radar de Inversiones en México</h1>
+<button id="buscarTop">Buscar inversiones</button>
 
-<div class="controles">
-  <button id="buscarTop">Buscar inversiones</button>
-  <button id="buscarHistorico">Ver histórico</button>
-
-  <input type="text" id="buscadorEmpresa" placeholder="Buscar empresa...">
-
-  <select id="filtroTipo">
-    <option value="TODOS">Todos los tipos</option>
-    <option value="PLANTA NUEVA">Planta nueva</option>
-    <option value="EXPANSIÓN">Expansión</option>
-    <option value="ALMACÉN">Almacén / CEDIS</option>
-    <option value="OTRO">Otro</option>
-  </select>
-</div>
-
-<div id="mapa"></div>
-
-<ul id="resultados"></ul>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="app.js"></script>
-
-</body>
-</html>
+<table>
+  <thead>
+    <tr>
+      <th>Empresa</th>
+      <th>Tipo</th>
+      <th>Sector</th>
+      <th>Año</th>
+      <th>Fuente</th>
+      <th>Link</th>
+    </tr>
+  </thead>
+  <tbody id="tabla"></tbody>
+</table>
