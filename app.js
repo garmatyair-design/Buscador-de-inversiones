@@ -1,64 +1,38 @@
-const lista = document.getElementById("resultados");
-const filtroTipo = document.getElementById("filtroTipo");
-const buscadorEmpresa = document.getElementById("buscadorEmpresa");
-
-let mapa = L.map("mapa").setView([23.6, -102.5], 5);
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(mapa);
-
-let marcadores = [];
-
-function limpiarMapa() {
-  marcadores.forEach(m => mapa.removeLayer(m));
-  marcadores = [];
-}
+const tabla = document.getElementById("tabla");
 
 async function cargarDatos() {
-  const res = await fetch("/api/inversiones");
-  let data = await res.json();
+  const empresa = document.getElementById("buscarEmpresa").value;
+  const tipo = document.getElementById("tipoInversion").value;
 
-  if (filtroTipo.value !== "TODOS") {
-    data = data.filter(d => d.tipo === filtroTipo.value);
-  }
+  const q = new URLSearchParams();
+  if (empresa) q.append("empresa", empresa);
+  if (tipo) q.append("tipo", tipo);
 
-  const empresa = buscadorEmpresa.value.toLowerCase();
-  if (empresa) {
-    data = data.filter(d => d.empresa.toLowerCase().includes(empresa));
-  }
+  const r = await fetch("/api/inversiones?" + q.toString());
+  const data = await r.json();
 
-  lista.innerHTML = "";
-  limpiarMapa();
-
-  if (data.length === 0) {
-    lista.innerHTML = "<li>No hay resultados</li>";
-    return;
-  }
-
-  data.forEach(d => {
-    const li = document.createElement("li");
-    li.innerHTML = `
-      <strong>${d.titulo}</strong><br>
-      Empresa: ${d.empresa}<br>
-      Sector: ${d.sector}<br>
-      Tipo: ${d.tipo}<br>
-      Fecha: ${d.anio_inicio} S${d.semestre}<br>
-      Fuente: ${d.fuente_nombre}<br>
-      <a href="${d.url}" target="_blank">Ver fuente</a>
-    `;
-    lista.appendChild(li);
-
-    if (d.lat && d.lng) {
-      const m = L.marker([d.lat, d.lng])
-        .addTo(mapa)
-        .bindPopup(`<strong>${d.empresa}</strong><br>${d.tipo}`);
-      marcadores.push(m);
-    }
-  });
+  tabla.innerHTML = data
+    .map(
+      i => `
+    <tr>
+      <td>${i.empresa}</td>
+      <td>${i.tipo_inversion}</td>
+      <td>${i.sector}</td>
+      <td>${i.anio_inicio}</td>
+      <td>${i.fuente_nombre}</td>
+      <td><a href="${i.url}" target="_blank">Fuente</a></td>
+    </tr>`
+    )
+    .join("");
 }
 
 document.getElementById("buscarTop").onclick = async () => {
-  await fetch("/api/buscarAutomatico");
-  await fetch("/api/rssFetcher");
+  try { await fetch("/api/buscarAutomatico"); } catch {}
+  try { await fetch("/api/rssFetcher"); } catch {}
   cargarDatos();
 };
 
-document.getElementById("buscarHistorico").onclick = cargarDatos;
+document.getElementById("buscarEmpresa").oninput = cargarDatos;
+document.getElementById("tipoInversion").onchange = cargarDatos;
+
+cargarDatos();
