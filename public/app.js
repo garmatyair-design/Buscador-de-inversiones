@@ -1,5 +1,10 @@
 const tabla = document.getElementById("tabla");
 
+const map = L.map("mapa").setView([23.6, -102.5], 5);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
+
+let markers = [];
+
 async function cargarDatos() {
   const empresa = document.getElementById("buscarEmpresa").value;
   const tipo = document.getElementById("tipoInversion").value;
@@ -8,27 +13,32 @@ async function cargarDatos() {
   if (empresa) q.append("empresa", empresa);
   if (tipo) q.append("tipo", tipo);
 
-  const r = await fetch("/api/inversiones?" + q.toString());
+  const r = await fetch("/api/inversiones?" + q);
   const data = await r.json();
 
-  tabla.innerHTML = data
-    .map(
-      i => `
-    <tr>
-      <td>${i.empresa}</td>
-      <td>${i.tipo_inversion}</td>
-      <td>${i.sector}</td>
-      <td>${i.anio_inicio}</td>
-      <td>${i.fuente_nombre}</td>
-      <td><a href="${i.url}" target="_blank">Fuente</a></td>
-    </tr>`
-    )
-    .join("");
+  tabla.innerHTML = "";
+  markers.forEach(m => map.removeLayer(m));
+  markers = [];
+
+  data.forEach(i => {
+    tabla.innerHTML += `
+      <tr>
+        <td>${i.empresa}</td>
+        <td>${i.tipo_inversion}</td>
+        <td>${i.sector}</td>
+        <td>${i.anio_inicio}</td>
+        <td><a href="${i.url}" target="_blank">Fuente</a></td>
+      </tr>`;
+
+    const m = L.marker([i.lat, i.lng])
+      .addTo(map)
+      .bindPopup(`<b>${i.empresa}</b><br>${i.tipo_inversion}`);
+    markers.push(m);
+  });
 }
 
 document.getElementById("buscarTop").onclick = async () => {
-  try { await fetch("/api/buscarAutomatico"); } catch {}
-  try { await fetch("/api/rssFetcher"); } catch {}
+  await fetch("/api/rssFetcher");
   cargarDatos();
 };
 
